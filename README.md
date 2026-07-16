@@ -21,7 +21,7 @@ The circuit is captured in `breadboard-project.json`, and the firmware that runs
 
 ## How To Use It
 
-Upload the code and access the menu using the keypad.
+Open the project using the Arduino IDE, and upload the sketch to the Arduino.
 
 
 ## Demo
