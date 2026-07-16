@@ -5,13 +5,13 @@
 
 
 
-> Built in [Breadboard](https://breadboard.hackclub.com), a Hack Club program. This project took ~3.4 hours of work.
+> Built in [Breadboard](https://breadboard.hackclub.com), a Hack Club program. This project took ~6.1 hours of work.
 
 
 
 ## What It Does
 
-An alarm clock that wakes you up in multiple ways
+This is an alarm clock with many different features. On the home page, it shows the time, scheduled alarm, and temperature. When the alarm rings, it plays a custom sound and lights up the LEDs. In order to turn off the alarm, you must tap the RFID tag, clap, and enter the password.
 
 
 ## How It Works
@@ -52,6 +52,7 @@ The editor snapshot is in `breadboard-project.json`.
 | microphone-module | 1 |
 | potentiometer | 1 |
 | rc522-rfid | 1 |
+| resistor-220 | 3 |
 
 
 ## Firmware
@@ -68,7 +69,7 @@ Build journal entries are kept in [`journals.md`](journals.md).
 
 
 
-*Made in [Breadboard](https://breadboard.hackclub.com) — 3.4h of work*
+*Made in [Breadboard](https://breadboard.hackclub.com) — 6.1h of work*
 
 
 
