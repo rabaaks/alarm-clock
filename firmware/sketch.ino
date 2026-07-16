@@ -26,6 +26,16 @@ byte hoursPart{};
 byte minutesPart{};
 byte secondsPart{};
 
+char key{};
+char lastKey{};
+
+// States are stored as functions that are run when the state is entered
+void (*state)(){idle};
+void (*lastState)(){idle};
+
+// For temporary states, the timer tracks when it should go back to the previous state
+unsigned long timer{};
+
 // Arduino Blink Example
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -36,12 +46,11 @@ void setup() {
 
 void displayTime() {
   lcd.setCursor(0, 0);
-  lcd.print("Time: %d:%d:%d", hoursPart, minutesPart, secondsPart);
+  lcd.print("Time: " + hoursPart + ":" + minutesPart + ":" + secondsPart);
 }
 
 void idle() {
   displayTime();
-  state = "idle";
 }
 
 void menu() {
@@ -49,27 +58,76 @@ void menu() {
   lcd.print("A-Alarm B-Time");
   lcd.setCursor(1, 0);
   lcd.print("C-Record D-Pswd");
-  state = "menu";
+  timer = millis() + 5000;
+  // If the previous state was another temporary state, make sure to go back to idle
+  lastState = idle;
+}
+
+byte enteredTimeDigits[6]{};
+byte enteredTimeIndex{};
+
+void displayEnteredTime() {
+  lcd.setCursor(1, 0);
+  for (byte i{}; i < enteredTimeIndex; i++) {
+    byte digit = enteredTimeDigits[i];
+    lcd.print(digit);
+    if (i == 1 || i == 3) {
+      lcd.print(":");
+    }
+  }
+}
+
+void displayEnteredPassword() {
+  lcd.setCursor(1, 0);
+  for (byte i{}: i < enteredPasswordIndex; i++) {
+    lcd.print("*");
+  }
 }
 
 void setAlarm() {
-
+  lcd.setCursor(0, 0);
+  lcd.print("Set alarm:")
+  lcd.setCursor(1, 0);
+  displayEnteredTime();
+  timer = millis() + 10000
 }
 
 void setTime() {
+  lcd.setCursor(0, 0);
+  lcd.print("Set time:")
+  lcd.setCursor(1, 0);
+  displayEnteredTime();
+  timer = millis() + 10000
+}
 
+
+
+void displayRecordingProgress() {
+  lcd.setCursor(1, 0);
+  byte num{recordingTimer - millis()}
 }
 
 void recordAlarm() {
-
+  lcd.setCursor(0, 0);
+  lcd.print("Recording in progress");
+  if (recordingTimer == 0) {
+    recordingTimer = millis()
+  }
+  displayRecordingProgress();
 }
 
 void setPassword() {
-
+  lcd.setCursor(0, 0);
+  lcd.print("Set password:")
+  
+  timer = millis() + 10000
 }
 
-void (*state)(){idle};
-void (*lastState)(){idle};
+void changeState((*newState)()) {
+  lastState = state;
+  state = newState
+  state();
+}
 
 void loop() {
   lastSeconds = seconds;
@@ -80,26 +138,41 @@ void loop() {
     minutesPart = seconds / 60 % 60;
     secondsPart = seconds % 60;
   }
-  char key = keypad.getKey();
+  lastKey = key;
+  key = keypad.getKey();
+  bool keyChanged = lastKey != key;
+
+  if (timer == millis()) {
+    timer = 0;
+    changeState(previousState);
+  }
+
   switch (state) {
     case idle:
       if (timeChanged) {
         displayTime();
       }
-      if (key == '#') menu();
+      if (key == '#') changeState(menu);
       break;
     case menu:
       if (key) {
         switch (key) {
           case 'A':
-            setAlarm();
+            changeState(setAlarm);
+            break;
           case 'B':
-            setTime();
+            changeState(setTime);
+            break;
           case 'C':
-            recordAlarm();
+            changeState(recordAlarm);
+            break;
           case 'D':
-            setPassword();
+            changeState(setPassword);
+            break;
         }
       }
+    case setAlarm:
+    case setTime:
+
   }
 }
