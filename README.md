@@ -2,7 +2,7 @@
 
 
 
-
+![Alarm Clock](screenshot.png)
 
 
 > Built in [Breadboard](https://breadboard.hackclub.com), a Hack Club program. This project took ~6.1 hours of work.
