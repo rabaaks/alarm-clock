@@ -5,7 +5,7 @@
 ![Alarm Clock](screenshot.png)
 
 
-> Built in [Breadboard](https://breadboard.hackclub.com), a Hack Club program. This project took ~6.1 hours of work.
+> Built in [Breadboard](https://breadboard.hackclub.com), a Hack Club program. This project took ~7 hours of work.
 
 
 
@@ -21,7 +21,7 @@ The circuit is captured in `breadboard-project.json`, and the firmware that runs
 
 ## How To Use It
 
-Open the project using the Arduino IDE, and upload the sketch to the Arduino.
+Open the project using the Arduino IDE, and upload the sketch to the Arduino. Press the # button and the LCD will show a menu with options to set the time, alarm, sound, and password. Use the keypad to navigate the menus and enter any information. When the alarm goes off you must enter the password on the keypad, clap, and scan the RFID tag.
 
 
 ## Demo
@@ -69,7 +69,7 @@ Build journal entries are kept in [`journals.md`](journals.md).
 
 
 
-*Made in [Breadboard](https://breadboard.hackclub.com) — 6.1h of work*
+*Made in [Breadboard](https://breadboard.hackclub.com) — 7h of work*
 
 
 
