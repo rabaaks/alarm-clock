@@ -10,12 +10,6 @@
 const byte PIN_LM35{A1};
 const byte PIN_BUZZER{3};
 
-const byte PIN_YELLOW{A4};
-const byte PIN_BLUE{A3};
-const byte PIN_RED{A5};
-
-const byte PIN_MIC{A2};
-
 const byte PIN_IR{2};
 
 const byte PIN_POT{A0};
@@ -33,7 +27,7 @@ char keys[PAD_SIZE][PAD_SIZE]{
   {'*','0','#','D'}
 };
 
-byte row[PAD_SIZE]{1, 0, 9, 8};
+byte row[PAD_SIZE]{A2, A3, 9, 8};
 byte col[PAD_SIZE]{7, 6, 5, 4};
 
 Keypad keypad = Keypad(makeKeymap(keys), row, col, PAD_SIZE, PAD_SIZE);
@@ -187,7 +181,7 @@ void idleRun() {
 void menuInit() {
   lcd.setCursor(0, 0);
   lcd.print("A-Alarm B-Time");
-  lcd.setCursor(1, 0);
+  lcd.setCursor(0, 1);
   lcd.print("C-Record D-Pswd");
   setTimeout(5000);
   // If the previous state was another temporary state, make sure to go back to idle
@@ -368,7 +362,7 @@ void volumeRun() {
   
 }
 
-bool passwordDone{}, rfidDone{}, clapDone{};
+bool passwordDone{}, rfidDone{};
 
 byte stopPasswordIndex{};
 char stopPassword[PASSWORD_LENGTH]{};
@@ -380,23 +374,15 @@ byte noteIndex{};
 unsigned long noteTimer{};
 
 void alarmInit() {
-  passwordDone = rfidDone = clapDone = false;
+  passwordDone = rfidDone = false;
 
   lcd.setCursor(0, 0);
-  lcd.print("Alarm Pass,RFID,");
+  lcd.print("Alarm Pass,RFID");
   lcd.setCursor(0, 1);
-  lcd.print("Clap to stop");
+  lcd.print("to stop");
 }
 
 void alarmRun() {
-  if (millis() > ledTimer) {
-    ledTimer = millis() + 250;
-    digitalWrite(PIN_YELLOW, ledStep == 0);
-    digitalWrite(PIN_BLUE, ledStep == 1);
-    digitalWrite(PIN_RED, ledStep == 2);
-    ledStep = (ledStep + 1) % 3;
-  }
-
   if (millis() > noteTimer) {
     noteTimer = millis() + 250;
     tone(PIN_BUZZER, recordedSound[noteIndex], 250);
@@ -418,28 +404,13 @@ void alarmRun() {
     rfid.PICC_HaltA();
   }
 
-  if (!clapDone) {
-    int level = analogRead(PIN_MIC);
-    if (level > 500) {
-      clapDone = true;
-    }
-  }
-
-  if (passwordDone && rfidDone && clapDone) {
+  if (passwordDone && rfidDone) {
     noTone(PIN_BUZZER);
-    digitalWrite(PIN_YELLOW, 0);
-    digitalWrite(PIN_BLUE, 0);
-    digitalWrite(PIN_RED, 0);
     changeState(BASE);
   }
 }
 
 void setup() {
-  Serial.begin(9600);
-
-  pinMode(PIN_YELLOW, OUTPUT);
-  pinMode(PIN_BLUE, OUTPUT);
-  pinMode(PIN_RED, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
 
   lcd.init();
