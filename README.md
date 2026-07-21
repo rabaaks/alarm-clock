@@ -11,7 +11,7 @@
 
 ## What It Does
 
-This is an alarm clock with many different features. On the home page, it shows the time, scheduled alarm, and temperature. When the alarm rings, it plays a custom sound and lights up the LEDs. In order to turn off the alarm, you must tap the RFID tag, clap, and enter the password.
+This is an alarm clock with many different features. On the home page, it shows the time, scheduled alarm, and temperature. When the alarm rings, it plays a custom sound and lights up the LEDs. In order to turn off the alarm, you must tap the RFID tag and enter the password.
 
 
 ## How It Works
@@ -49,7 +49,6 @@ The editor snapshot is in `breadboard-project.json`.
 | led-yellow | 1 |
 | lm35dz | 1 |
 | membrane-keypad | 1 |
-| microphone-module | 1 |
 | potentiometer | 1 |
 | rc522-rfid | 1 |
 | resistor-220 | 3 |
