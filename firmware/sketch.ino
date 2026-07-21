@@ -1,22 +1,26 @@
 #include <LiquidCrystal_I2C.h>
 #include <Keypad.h>
 #include <MFRC522v2.h>
-#include <MFRC522DriverI2C.h>
+#include <MFRC522DriverSPI.h>
+#include <MFRC522DriverPinSimple.h>
+#include <SPI.h>
 #include <Wire.h>
 #include <IRremote.hpp>
 
-const byte PIN_LM35{ A1 };
+const byte PIN_LM35{A1};
 const byte PIN_BUZZER{3};
 
-const byte PIN_RED{A5};
 const byte PIN_YELLOW{A4};
 const byte PIN_BLUE{A3};
+const byte PIN_RED{A5};
 
 const byte PIN_MIC{A2};
 
 const byte PIN_IR{2};
 
 const byte PIN_POT{A0};
+
+const byte PIN_RFID_SS{10};
 
 LiquidCrystal_I2C lcd(0x27, 16, 2);
 
@@ -29,12 +33,13 @@ char keys[PAD_SIZE][PAD_SIZE]{
   {'*','0','#','D'}
 };
 
-byte row[PAD_SIZE]{11, 10, 9, 8};
+byte row[PAD_SIZE]{1, 0, 9, 8};
 byte col[PAD_SIZE]{7, 6, 5, 4};
 
 Keypad keypad = Keypad(makeKeymap(keys), row, col, PAD_SIZE, PAD_SIZE);
 
-MFRC522DriverI2C rfidDriver{};
+MFRC522DriverPinSimple ssPin{PIN_RFID_SS};
+MFRC522DriverSPI rfidDriver{ssPin};
 MFRC522 rfid{rfidDriver};
 
 enum State {
@@ -114,7 +119,7 @@ unsigned long seconds{};
 unsigned long lastSeconds{};
 
 const byte PASSWORD_LENGTH{6};
-char password[PASSWORD_LENGTH];
+char password[PASSWORD_LENGTH+1]{};
 
 const char noteKeys[]{'1', '2', '3', 'A', '4', '5', '6', 'B', '7', '8', '9', 'C'};
 const unsigned int frequencies[]{262, 277, 294, 311, 330, 349, 370, 392, 415, 440, 466, 494};
@@ -241,7 +246,7 @@ bool timeEntry() {
     return false;
   }
 
-  if (key == '#' && enteredTimeIndex == 4); {
+  if (key == '#' && enteredTimeIndex == 4) {
     return true;
   }
 
@@ -260,10 +265,14 @@ void setTimeInit() {
   setTimeout(10000);
 }
 
+bool alarmEnabled = false;
+
 void setAlarmRun() {
   if (timeEntry()) {
     alarmHours = (enteredTimeDigits[0] * 10 + enteredTimeDigits[1]);
     alarmMinutes = (enteredTimeDigits[2] * 10 + enteredTimeDigits[3]);
+
+    alarmEnabled = true;
 
     changeState(BASE);
   }
@@ -340,6 +349,7 @@ void setPasswordRun() {
   }
 
   if (passwordIndex == PASSWORD_LENGTH) {
+    password[PASSWORD_LENGTH] = '\0';
     changeState(BASE);
   }
 }
@@ -376,15 +386,14 @@ void alarmInit() {
   lcd.print("Alarm Pass,RFID,");
   lcd.setCursor(0, 1);
   lcd.print("Clap to stop");
-  rfid.PCD_Init();
 }
 
 void alarmRun() {
   if (millis() > ledTimer) {
     ledTimer = millis() + 250;
-    digitalWrite(PIN_RED, ledStep == 0);
-    digitalWrite(PIN_YELLOW, ledStep == 1);
-    digitalWrite(PIN_BLUE, ledStep == 2);
+    digitalWrite(PIN_YELLOW, ledStep == 0);
+    digitalWrite(PIN_BLUE, ledStep == 1);
+    digitalWrite(PIN_RED, ledStep == 2);
     ledStep = (ledStep + 1) % 3;
   }
 
@@ -418,9 +427,9 @@ void alarmRun() {
 
   if (passwordDone && rfidDone && clapDone) {
     noTone(PIN_BUZZER);
-    digitalWrite(PIN_RED, 0);
     digitalWrite(PIN_YELLOW, 0);
     digitalWrite(PIN_BLUE, 0);
+    digitalWrite(PIN_RED, 0);
     changeState(BASE);
   }
 }
@@ -428,15 +437,16 @@ void alarmRun() {
 void setup() {
   Serial.begin(9600);
 
-  pinMode(PIN_RED, OUTPUT);
   pinMode(PIN_YELLOW, OUTPUT);
   pinMode(PIN_BLUE, OUTPUT);
+  pinMode(PIN_RED, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
 
   lcd.init();
   lcd.backlight();
 
   Wire.begin();
+  SPI.begin();
   rfid.PCD_Init();
   IrReceiver.begin(PIN_IR);
 
@@ -474,7 +484,8 @@ void loop() {
     changeState(VOLUME);
   }
 
-  if (hoursPart == alarmHours && minutesPart == alarmMinutes) {
+  if (alarmEnabled && state != ALARM &&
+    hoursPart == alarmHours && minutesPart == alarmMinutes) {
     changeState(ALARM);
   }
 
